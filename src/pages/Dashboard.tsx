@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, Sparkles, FileText, Check, LogOut, ShoppingBag, Download } from 'lucide-react';
+import { Sparkles, FileText, Check, LogOut, ShoppingBag, Download } from 'lucide-react';
 import { MacroRing } from '../components/MacroRing';
 import { EmptyState } from '../components/EmptyState';
+import { Dropzone } from '../components/Dropzone';
 import { useNutritionPlan } from '../hooks/useNutritionPlan';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -57,6 +58,15 @@ export function Dashboard() {
       setHasPlan(true);
       setShowUploadModal(false);
       setPlanText('');
+    }
+  };
+
+  const handleFileUpload = async (file: File) => {
+    const text = await file.text();
+    if (text.trim()) {
+      await processPlan(text);
+      setHasPlan(true);
+      setShowUploadModal(false);
     }
   };
 
@@ -192,7 +202,6 @@ export function Dashboard() {
                   onClick={() => setShowUploadModal(true)}
                   className="w-full py-3 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 flex items-center justify-center gap-2 hover:border-mint hover:text-mint transition"
                 >
-                  <Upload size={20} />
                   Actualizar pauta
                 </button>
               </motion.div>
@@ -227,7 +236,7 @@ export function Dashboard() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-2xl p-6 w-full max-w-md"
+              className="bg-white rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto"
             >
               <h3 className="text-xl font-bold text-navy mb-4 flex items-center gap-2">
                 <Sparkles className="text-mint" />
@@ -235,17 +244,30 @@ export function Dashboard() {
               </h3>
 
               <p className="text-gray-500 mb-4 text-sm">
-                Ingresa las pautas de tu nutricionista o genera un plan sugerido automáticamente.
+                Sube tu pauta en archivo o genera un plan sugerido automáticamente.
               </p>
+
+              <div className="mb-4">
+                <Dropzone onFileUpload={handleFileUpload} />
+              </div>
+
+              <div className="relative py-4">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-200"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white text-gray-500">o</span>
+                </div>
+              </div>
 
               <textarea
                 value={planText}
                 onChange={(e) => setPlanText(e.target.value)}
                 placeholder="Pega aquí las pautas de tu nutricionista..."
-                className="w-full h-40 p-3 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-mint text-sm"
+                className="w-full h-32 p-3 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-mint text-sm mb-4"
               />
 
-              <div className="flex gap-3 mt-4">
+              <div className="flex gap-3">
                 <button
                   onClick={() => setShowUploadModal(false)}
                   className="flex-1 py-3 border border-gray-200 rounded-xl text-gray-600 font-medium"
