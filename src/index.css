@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+@theme {
+  --color-mint: #2ECC71;
+  --color-navy: #1B2631;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
