@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LogOut, Calendar, Store, Check } from 'lucide-react';
+import { LogOut, Calendar, Store, Check, ShoppingBag } from 'lucide-react';
 import { Layout } from '../components/Layout';
 import { MacroRing } from '../components/MacroRing';
 import { Dropzone } from '../components/Dropzone';
@@ -67,6 +67,10 @@ export function PatientExperience() {
     { name: 'Grasas', current: 45, target: 60, color: '#E74C3C' },
   ];
 
+  const totalCartPrice = sampleShoppingItems
+    .filter(i => cartItems.includes(i.id))
+    .reduce((acc, i) => acc + i.price, 0);
+
   return (
     <Layout title={user?.name || 'Mi Plan'} showBack>
       <div className="p-4">
@@ -82,9 +86,10 @@ export function PatientExperience() {
           </div>
           <button
             onClick={() => { logout(); navigate('/login'); }}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="flex items-center gap-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors text-sm font-medium text-gray-600"
           >
-            <LogOut size={20} className="text-gray-400" />
+            <LogOut size={16} />
+            <span>Cerrar sesión</span>
           </button>
         </div>
 
@@ -104,15 +109,16 @@ export function PatientExperience() {
           </div>
         </div>
 
-        {!hasPlan ? (
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-navy mb-4">Sube tu Pauta</h3>
-            <Dropzone onFileUpload={handleFileUpload} isLoading={isLoading} />
-          </div>
-        ) : (
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold text-navy mb-4">Sube tu Pauta Nutricional</h3>
+          <Dropzone onFileUpload={handleFileUpload} isLoading={isLoading} />
+        </div>
+
+        {hasPlan && extractedData && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
+            className="mb-4"
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-navy">Plan Semanal</h3>
@@ -126,7 +132,7 @@ export function PatientExperience() {
             </div>
 
             <AnimatePresence>
-              {showWeeklyPlan && extractedData && (
+              {showWeeklyPlan && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
@@ -148,41 +154,47 @@ export function PatientExperience() {
                 </motion.div>
               )}
             </AnimatePresence>
-
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-navy">Lista de Compras</h3>
-              <span className="text-sm text-gray-500 flex items-center gap-1">
-                <Check size={16} className="text-mint" />
-                {cartItems.length}/{sampleShoppingItems.length} seleccionados
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 mb-20">
-              {sampleShoppingItems.map((item) => (
-                <ShoppingCard
-                  key={item.id}
-                  item={item}
-                  onAddToCart={handleAddToCart}
-                  isInCart={cartItems.includes(item.id)}
-                />
-              ))}
-            </div>
           </motion.div>
         )}
 
-        {!hasPlan && <EmptyState />}
+        <div className="flex items-center justify-between mb-4 mt-6">
+          <h3 className="text-lg font-semibold text-navy flex items-center gap-2">
+            <ShoppingBag size={20} className="text-mint" />
+            Lista de Compras
+          </h3>
+          <span className="text-sm text-gray-500 flex items-center gap-1">
+            <Check size={16} className="text-mint" />
+            {cartItems.length}/{sampleShoppingItems.length} seleccionados
+          </span>
+        </div>
 
-        {hasPlan && (
-          <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 max-w-[450px] mx-auto">
-            <button
-              onClick={() => navigate('/checkout')}
-              className="w-full bg-navy text-white font-semibold py-4 rounded-xl hover:bg-navy/90 transition-colors shadow-lg flex items-center justify-center gap-2"
-            >
-              <Store size={20} />
-              Push to Supermarket (${sampleShoppingItems.filter(i => cartItems.includes(i.id)).reduce((acc, i) => acc + i.price, 0).toLocaleString('es-CL')})
-            </button>
-          </div>
-        )}
+        <div className="grid grid-cols-2 gap-3 mb-32">
+          {sampleShoppingItems.map((item) => (
+            <ShoppingCard
+              key={item.id}
+              item={item}
+              onAddToCart={handleAddToCart}
+              isInCart={cartItems.includes(item.id)}
+            />
+          ))}
+        </div>
+
+        {!hasPlan && <EmptyState />}
+      </div>
+
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 max-w-[450px] mx-auto">
+        <button
+          onClick={() => navigate('/checkout')}
+          className="w-full bg-navy text-white font-semibold py-4 rounded-xl hover:bg-navy/90 transition-colors shadow-lg flex items-center justify-center gap-2"
+        >
+          <Store size={20} />
+          Ir al Supermercado
+          {totalCartPrice > 0 && (
+            <span className="bg-mint px-2 py-0.5 rounded-full text-sm">
+              ${totalCartPrice.toLocaleString('es-CL')}
+            </span>
+          )}
+        </button>
       </div>
     </Layout>
   );
