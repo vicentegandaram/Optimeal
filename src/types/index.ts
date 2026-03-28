@@ -41,7 +41,7 @@ export interface ExtractedData {
   fats: number;
 }
 
-export interface ShoppingItem {
+export interface Ingredient {
   id: string;
   name: string;
   quantity: string;
@@ -49,3 +49,5 @@ export interface ShoppingItem {
   store: 'Jumbo' | 'Lider';
   image?: string;
 }
+
+export type ShoppingItem = Ingredient;

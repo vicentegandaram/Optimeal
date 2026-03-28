@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Upload, FileText, X, Check } from 'lucide-react';
 
 interface DropzoneProps {
-  onFileUpload: (file: File) => void;
+  onFileUpload: (file?: File) => void;
   isLoading?: boolean;
   acceptedTypes?: string[];
   maxSize?: number;

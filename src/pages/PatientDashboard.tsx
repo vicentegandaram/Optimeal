@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LogOut, Upload, ShoppingCart, ChevronRight, ChefHat } from 'lucide-react';
+import { LogOut, Upload, ShoppingCart, ChefHat, Check, Store } from 'lucide-react';
 import { Layout } from '../components/Layout';
 import { MacroRing } from '../components/MacroRing';
 import { Dropzone } from '../components/Dropzone';
+import { ShoppingCard } from '../components/ShoppingCard';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { weeklyPlanTemplate, type DayPlan } from '../data/mockData';
+import { weeklyPlanTemplate, getShoppingListFromPlan, type DayPlan, type Ingredient } from '../data/mockData';
 
 export function PatientDashboard() {
   const { user, logout } = useAuth();
@@ -16,16 +17,21 @@ export function PatientDashboard() {
   const [loadingMessage, setLoadingMessage] = useState('');
   const [weeklyPlan, setWeeklyPlan] = useState<DayPlan[]>([]);
   const [selectedDay, setSelectedDay] = useState<DayPlan | null>(null);
+  const [shoppingList, setShoppingList] = useState<Ingredient[]>([]);
+  const [cartItems, setCartItems] = useState<string[]>([]);
 
   useEffect(() => {
-    const stored = localStorage.getItem('optimeal_plan');
-    if (stored) {
-      setWeeklyPlan(weeklyPlanTemplate);
+    const storedPlan = localStorage.getItem('optimeal_weekly_plan');
+    const storedShoppingList = localStorage.getItem('optimeal_shopping_list');
+    
+    if (storedPlan && storedShoppingList) {
+      setWeeklyPlan(JSON.parse(storedPlan));
+      setShoppingList(JSON.parse(storedShoppingList));
       setHasPlan(true);
     }
   }, []);
 
-  const handleUpload = useCallback(async (_file: File) => {
+  const handleUpload = useCallback(async () => {
     setIsLoading(true);
     
     const messages = [
@@ -40,18 +46,31 @@ export function PatientDashboard() {
       await new Promise(resolve => setTimeout(resolve, 600));
     }
 
-    await new Promise(resolve => setTimeout(resolve, 400));
+    const plan = weeklyPlanTemplate;
+    const list = getShoppingListFromPlan(plan);
     
-    setWeeklyPlan(weeklyPlanTemplate);
+    setWeeklyPlan(plan);
+    setShoppingList(list);
     setHasPlan(true);
     setIsLoading(false);
     setLoadingMessage('');
+    
     localStorage.setItem('optimeal_plan', JSON.stringify({ uploaded: true }));
+    localStorage.setItem('optimeal_weekly_plan', JSON.stringify(plan));
+    localStorage.setItem('optimeal_shopping_list', JSON.stringify(list));
   }, []);
 
   const handleLogout = () => {
     logout();
     navigate('/');
+  };
+
+  const handleAddToCart = (item: Ingredient) => {
+    setCartItems(prev => 
+      prev.includes(item.id) 
+        ? prev.filter(id => id !== item.id)
+        : [...prev, item.id]
+    );
   };
 
   const macros = [
@@ -60,15 +79,13 @@ export function PatientDashboard() {
     { name: 'Grasas', current: 45, target: 60, color: '#E74C3C' },
   ];
 
-  const totalMacros = weeklyPlan.length > 0 ? {
-    protein: weeklyPlan.reduce((acc, day) => acc + day.meals.reduce((mAcc, meal) => mAcc + meal.recipe.protein, 0), 0),
-    carbs: weeklyPlan.reduce((acc, day) => acc + day.meals.reduce((mAcc, meal) => mAcc + meal.recipe.carbs, 0), 0),
-    fats: weeklyPlan.reduce((acc, day) => acc + day.meals.reduce((mAcc, meal) => mAcc + meal.recipe.fats, 0), 0),
-  } : null;
+  const totalCartPrice = cartItems.length > 0
+    ? shoppingList.filter(i => cartItems.includes(i.id)).reduce((acc, i) => acc + i.price, 0)
+    : 0;
 
   return (
     <Layout title={user?.name || 'Mi Plan'} showBack>
-      <div className="p-4 pb-24">
+      <div className="p-4 pb-28">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-mint rounded-full flex items-center justify-center text-white font-bold text-lg">
@@ -102,22 +119,6 @@ export function PatientDashboard() {
               />
             ))}
           </div>
-          {totalMacros && (
-            <div className="mt-4 pt-4 border-t border-white/10 flex justify-around text-sm">
-              <div className="text-center">
-                <p className="text-gray-400">Proteínas semanales</p>
-                <p className="text-white font-semibold">{totalMacros.protein}g</p>
-              </div>
-              <div className="text-center">
-                <p className="text-gray-400">Carbohidratos semanales</p>
-                <p className="text-white font-semibold">{totalMacros.carbs}g</p>
-              </div>
-              <div className="text-center">
-                <p className="text-gray-400">Grasas semanales</p>
-                <p className="text-white font-semibold">{totalMacros.fats}g</p>
-              </div>
-            </div>
-          )}
         </div>
 
         {!hasPlan && !isLoading && (
@@ -127,6 +128,19 @@ export function PatientDashboard() {
               Sube tu Pauta Nutricional
             </h3>
             <Dropzone onFileUpload={handleUpload} isLoading={isLoading} />
+            
+            <div className="mt-4 bg-mint/10 rounded-xl p-4">
+              <p className="text-sm text-gray-600 mb-3">
+                ¿No tienes tu pauta? Nosotros podemos crear una sugerencia basada en tus objetivos.
+              </p>
+              <button
+                onClick={handleUpload}
+                className="w-full bg-mint text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-mint/90 transition-colors"
+              >
+                <Check size={18} />
+                Generar Plan Sugerido
+              </button>
+            </div>
           </div>
         )}
 
@@ -192,7 +206,7 @@ export function PatientDashboard() {
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
-                className="space-y-3 mb-4"
+                className="mb-4 space-y-4"
               >
                 <div className="bg-gradient-to-r from-mint/10 to-transparent rounded-xl p-4">
                   <h4 className="font-bold text-navy mb-3">{selectedDay.day}</h4>
@@ -222,27 +236,48 @@ export function PatientDashboard() {
                   </div>
                 </div>
 
-                <button
-                  onClick={() => navigate('/checkout')}
-                  className="w-full bg-mint text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-mint/90 transition-colors shadow-lg"
-                >
-                  <ShoppingCart size={18} />
-                  Ver en Supermercado
-                  <ChevronRight size={18} />
-                </button>
+                <div className="bg-blue-50 rounded-xl p-4">
+                  <h4 className="font-medium text-blue-700 mb-2 flex items-center gap-2">
+                    <Store size={16} />
+                    Ingredientes para {selectedDay.day}
+                  </h4>
+                  <div className="space-y-2">
+                    {getShoppingListFromPlan([selectedDay]).map((item) => (
+                      <div key={item.id} className="flex items-center justify-between text-sm">
+                        <span className="text-blue-600">{item.name}</span>
+                        <span className="text-blue-400 text-xs">{item.quantity}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </motion.div>
             )}
 
-            {!selectedDay && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="bg-gray-50 rounded-xl p-6 text-center"
-              >
-                <ChefHat size={40} className="mx-auto mb-2 text-gray-300" />
-                <p className="text-gray-500">Selecciona un día para ver las recetas</p>
-              </motion.div>
-            )}
+            <h3 className="text-lg font-bold text-navy mb-4 mt-6 flex items-center gap-2">
+              <ShoppingCart size={20} className="text-mint" />
+              Lista de Compras ({selectedDay ? 'Hoy' : 'Semana completa'})
+            </h3>
+
+            <div className="grid grid-cols-2 gap-3">
+              {selectedDay 
+                ? getShoppingListFromPlan([selectedDay]).map((item) => (
+                    <ShoppingCard
+                      key={item.id}
+                      item={item}
+                      onAddToCart={handleAddToCart}
+                      isInCart={cartItems.includes(item.id)}
+                    />
+                  ))
+                : shoppingList.map((item) => (
+                    <ShoppingCard
+                      key={item.id}
+                      item={item}
+                      onAddToCart={handleAddToCart}
+                      isInCart={cartItems.includes(item.id)}
+                    />
+                  ))
+              }
+            </div>
           </motion.div>
         )}
 
@@ -258,7 +293,7 @@ export function PatientDashboard() {
             </div>
             <h3 className="font-bold text-navy mb-2">¿Aún no tienes tu pauta?</h3>
             <p className="text-gray-500 text-sm">
-              Sube tu plan nutricional y comenzaremos a optimizar tus compras semanalmente
+              Sube tu plan nutricional o genera uno sugerido para comenzar
             </p>
           </motion.div>
         )}
@@ -272,6 +307,11 @@ export function PatientDashboard() {
           >
             <ShoppingCart size={20} />
             Ir al Supermercado
+            {totalCartPrice > 0 && (
+              <span className="bg-mint px-3 py-1 rounded-full text-sm">
+                ${totalCartPrice.toLocaleString('es-CL')}
+              </span>
+            )}
           </button>
         </div>
       )}

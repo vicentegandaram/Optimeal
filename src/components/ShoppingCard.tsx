@@ -1,16 +1,30 @@
 import { motion } from 'framer-motion';
 import { ShoppingCart, TrendingDown } from 'lucide-react';
-import type { ShoppingItem } from '../types';
+import { type Ingredient } from '../types';
 
 interface ShoppingCardProps {
-  item: ShoppingItem;
-  onAddToCart?: (item: ShoppingItem) => void;
+  item: Ingredient;
+  onAddToCart?: (item: Ingredient) => void;
   isInCart?: boolean;
 }
 
 export function ShoppingCard({ item, onAddToCart, isInCart = false }: ShoppingCardProps) {
   const originalPrice = Math.round(item.price * 1.15);
   const discount = Math.round((1 - item.price / originalPrice) * 100);
+
+  const getEmoji = (name: string) => {
+    const lower = name.toLowerCase();
+    if (lower.includes('pollo')) return '🍗';
+    if (lower.includes('salmón') || lower.includes('salmon')) return '🐟';
+    if (lower.includes('arroz')) return '🍚';
+    if (lower.includes('quinoa')) return '🌾';
+    if (lower.includes('huev')) return '🥚';
+    if (lower.includes('palta') || lower.includes('aguacate')) return '🥑';
+    if (lower.includes('brócoli') || lower.includes('brocoli')) return '🥦';
+    if (lower.includes('espinaca')) return '🥬';
+    if (lower.includes('avena')) return '🌾';
+    return '🛒';
+  };
 
   return (
     <motion.div
@@ -20,17 +34,8 @@ export function ShoppingCard({ item, onAddToCart, isInCart = false }: ShoppingCa
       className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden"
     >
       <div className="relative p-4">
-        <div className="w-full h-32 bg-gray-100 rounded-lg flex items-center justify-center mb-3">
-          <span className="text-4xl">{
-            item.name.toLowerCase().includes('pollo') ? '🍗' :
-            item.name.toLowerCase().includes('salmón') || item.name.toLowerCase().includes('salmon') ? '🐟' :
-            item.name.toLowerCase().includes('arroz') ? '🍚' :
-            item.name.toLowerCase().includes('quinoa') ? '🌾' :
-            item.name.toLowerCase().includes('huevo') ? '🥚' :
-            item.name.toLowerCase().includes('palta') || item.name.toLowerCase().includes('aguacate') ? '🥑' :
-            item.name.toLowerCase().includes('vegetal') || item.name.toLowerCase().includes('verdura') ? '🥬' :
-            '🛒'
-          }</span>
+        <div className="w-full h-28 bg-gray-100 rounded-lg flex items-center justify-center mb-3">
+          <span className="text-4xl">{getEmoji(item.name)}</span>
         </div>
 
         {discount > 0 && (
@@ -41,7 +46,7 @@ export function ShoppingCard({ item, onAddToCart, isInCart = false }: ShoppingCa
         )}
 
         <div className="flex items-start justify-between mb-2">
-          <div>
+          <div className="flex-1 pr-2">
             <h3 className="font-semibold text-navy text-sm line-clamp-2">{item.name}</h3>
             <p className="text-xs text-gray-500">{item.quantity}</p>
           </div>
@@ -61,7 +66,6 @@ export function ShoppingCard({ item, onAddToCart, isInCart = false }: ShoppingCa
 
         <button
           onClick={() => onAddToCart?.(item)}
-          disabled={isInCart}
           className={`w-full py-3 rounded-xl flex items-center justify-center gap-2 font-medium transition-all ${
             isInCart
               ? 'bg-green-100 text-green-600 cursor-default'
