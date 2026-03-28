@@ -1,3 +1,6 @@
+import { motion } from 'framer-motion';
+import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+
 interface MacroRingProps {
   name: string;
   current: number;
@@ -8,13 +11,23 @@ interface MacroRingProps {
 
 export function MacroRing({ name, current, target, color, size = 100 }: MacroRingProps) {
   const percentage = Math.min((current / target) * 100, 100);
-  const strokeWidth = 8;
+  const strokeWidth = 10;
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const offset = circumference - (percentage / 100) * circumference;
 
+  const getStatusIcon = () => {
+    if (percentage >= 90) return <TrendingUp size={14} className="text-mint" />;
+    if (percentage <= 50) return <TrendingDown size={14} className="text-red-500" />;
+    return <Minus size={14} className="text-yellow-500" />;
+  };
+
   return (
-    <div className="flex flex-col items-center">
+    <motion.div
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="flex flex-col items-center"
+    >
       <div className="relative" style={{ width: size, height: size }}>
         <svg className="transform -rotate-90" width={size} height={size}>
           <circle
@@ -25,7 +38,7 @@ export function MacroRing({ name, current, target, color, size = 100 }: MacroRin
             strokeWidth={strokeWidth}
             fill="none"
           />
-          <circle
+          <motion.circle
             cx={size / 2}
             cy={size / 2}
             r={radius}
@@ -33,17 +46,23 @@ export function MacroRing({ name, current, target, color, size = 100 }: MacroRin
             strokeWidth={strokeWidth}
             fill="none"
             strokeDasharray={circumference}
-            strokeDashoffset={offset}
+            initial={{ strokeDashoffset: circumference }}
+            animate={{ strokeDashoffset: offset }}
+            transition={{ duration: 1, ease: 'easeOut' }}
             strokeLinecap="round"
-            className="transition-all duration-700"
           />
         </svg>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-lg font-bold text-gray-800">{percentage.toFixed(0)}%</span>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-xl font-bold text-navy">{percentage.toFixed(0)}%</span>
         </div>
       </div>
-      <span className="mt-2 text-sm font-medium text-gray-600">{name}</span>
-      <span className="text-xs text-gray-400">{current}/{target}g</span>
-    </div>
+      <div className="mt-2 text-center">
+        <div className="flex items-center gap-1 justify-center">
+          <span className="text-sm font-semibold text-navy">{name}</span>
+          {getStatusIcon()}
+        </div>
+        <span className="text-xs text-gray-400">{current}/{target}g</span>
+      </div>
+    </motion.div>
   );
 }

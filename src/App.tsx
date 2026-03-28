@@ -2,9 +2,9 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { LoginPage } from './pages/LoginPage';
 import { NutritionistDashboard } from './pages/NutritionistDashboard';
-import { PatientDashboard } from './pages/PatientDashboard';
-import { ProcessingBridge } from './pages/ProcessingBridge';
-import { SmartCheckout } from './pages/SmartCheckout';
+import { Dashboard } from './pages/Dashboard';
+import { Planner } from './pages/Planner';
+import { ExportView } from './pages/ExportView';
 
 function ProtectedRoute({ children, allowedRole }: { children: React.ReactNode; allowedRole?: 'nutritionist' | 'patient' }) {
   const { user, isAuthenticated } = useAuth();
@@ -39,11 +39,19 @@ function AppRoutes() {
       } />
       <Route path="/paciente" element={
         <ProtectedRoute allowedRole="patient">
-          <PatientDashboard />
+          <Dashboard />
         </ProtectedRoute>
       } />
-      <Route path="/processing" element={<ProcessingBridge />} />
-      <Route path="/checkout" element={<SmartCheckout />} />
+      <Route path="/planner" element={
+        <ProtectedRoute allowedRole="patient">
+          <Planner />
+        </ProtectedRoute>
+      } />
+      <Route path="/export" element={
+        <ProtectedRoute allowedRole="patient">
+          <ExportView />
+        </ProtectedRoute>
+      } />
     </Routes>
   );
 }
