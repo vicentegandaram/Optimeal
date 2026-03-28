@@ -4,6 +4,7 @@ export interface Patient {
   adherence: number;
   lastVisit: string;
   avatar: string;
+  email: string;
 }
 
 export interface Nutritionist {
@@ -26,6 +27,9 @@ export interface Recipe {
   calories: number;
   image: string;
   time: string;
+  protein: number;
+  carbs: number;
+  fats: number;
 }
 
 export interface Ingredient {
@@ -33,6 +37,16 @@ export interface Ingredient {
   name: string;
   quantity: string;
   store: 'Jumbo' | 'Lider';
+}
+
+export interface Meal {
+  name: string;
+  recipe: Recipe;
+}
+
+export interface DayPlan {
+  day: string;
+  meals: Meal[];
 }
 
 export const nutritionist: Nutritionist = {
@@ -49,20 +63,15 @@ export const patients: Patient[] = [
     adherence: 78,
     lastVisit: 'Hace 2 días',
     avatar: 'AM',
+    email: 'andres.morales@email.cl',
   },
   {
     id: 'pat-002',
-    name: 'María Fernández',
+    name: 'Valentina Silva',
     adherence: 92,
     lastVisit: 'Hoy',
-    avatar: 'MF',
-  },
-  {
-    id: 'pat-003',
-    name: 'Carlos Vega',
-    adherence: 65,
-    lastVisit: 'Hace 1 semana',
-    avatar: 'CV',
+    avatar: 'VS',
+    email: 'valentina.silva@email.cl',
   },
 ];
 
@@ -79,6 +88,9 @@ export const recipes: Recipe[] = [
     calories: 485,
     image: '🥗',
     time: '25 min',
+    protein: 35,
+    carbs: 45,
+    fats: 12,
   },
   {
     id: 'rec-002',
@@ -86,6 +98,9 @@ export const recipes: Recipe[] = [
     calories: 520,
     image: '🐟',
     time: '35 min',
+    protein: 40,
+    carbs: 20,
+    fats: 28,
   },
   {
     id: 'rec-003',
@@ -93,6 +108,39 @@ export const recipes: Recipe[] = [
     calories: 340,
     image: '🥬',
     time: '15 min',
+    protein: 25,
+    carbs: 30,
+    fats: 15,
+  },
+  {
+    id: 'rec-004',
+    name: 'Avena con Frutas',
+    calories: 380,
+    image: '🥣',
+    time: '10 min',
+    protein: 15,
+    carbs: 60,
+    fats: 8,
+  },
+  {
+    id: 'rec-005',
+    name: 'Huevos Revueltos con Palta',
+    calories: 420,
+    image: '🍳',
+    time: '12 min',
+    protein: 22,
+    carbs: 15,
+    fats: 32,
+  },
+  {
+    id: 'rec-006',
+    name: 'Yogur con Granola',
+    calories: 290,
+    image: '🥛',
+    time: '5 min',
+    protein: 12,
+    carbs: 40,
+    fats: 10,
   },
 ];
 
@@ -103,4 +151,70 @@ export const ingredients: Ingredient[] = [
   { id: 'ing-004', name: 'Aguacate', quantity: '3 unidades', store: 'Lider' },
   { id: 'ing-005', name: 'Salmón', quantity: '400g', store: 'Jumbo' },
   { id: 'ing-006', name: 'Espinacas', quantity: '200g', store: 'Lider' },
+];
+
+export const weeklyPlanTemplate: DayPlan[] = [
+  {
+    day: 'Lunes',
+    meals: [
+      { name: 'Desayuno', recipe: recipes[3] },
+      { name: 'Almuerzo', recipe: recipes[0] },
+      { name: 'Merienda', recipe: recipes[5] },
+      { name: 'Cena', recipe: recipes[2] },
+    ],
+  },
+  {
+    day: 'Martes',
+    meals: [
+      { name: 'Desayuno', recipe: recipes[4] },
+      { name: 'Almuerzo', recipe: recipes[1] },
+      { name: 'Merienda', recipe: recipes[5] },
+      { name: 'Cena', recipe: recipes[2] },
+    ],
+  },
+  {
+    day: 'Miércoles',
+    meals: [
+      { name: 'Desayuno', recipe: recipes[3] },
+      { name: 'Almuerzo', recipe: recipes[0] },
+      { name: 'Merienda', recipe: recipes[5] },
+      { name: 'Cena', recipe: recipes[1] },
+    ],
+  },
+  {
+    day: 'Jueves',
+    meals: [
+      { name: 'Desayuno', recipe: recipes[4] },
+      { name: 'Almuerzo', recipe: recipes[2] },
+      { name: 'Merienda', recipe: recipes[5] },
+      { name: 'Cena', recipe: recipes[0] },
+    ],
+  },
+  {
+    day: 'Viernes',
+    meals: [
+      { name: 'Desayuno', recipe: recipes[3] },
+      { name: 'Almuerzo', recipe: recipes[1] },
+      { name: 'Merienda', recipe: recipes[5] },
+      { name: 'Cena', recipe: recipes[2] },
+    ],
+  },
+  {
+    day: 'Sábado',
+    meals: [
+      { name: 'Desayuno', recipe: recipes[4] },
+      { name: 'Almuerzo', recipe: recipes[0] },
+      { name: 'Merienda', recipe: recipes[5] },
+      { name: 'Cena', recipe: recipes[1] },
+    ],
+  },
+  {
+    day: 'Domingo',
+    meals: [
+      { name: 'Desayuno', recipe: recipes[3] },
+      { name: 'Almuerzo', recipe: recipes[2] },
+      { name: 'Merienda', recipe: recipes[5] },
+      { name: 'Cena', recipe: recipes[0] },
+    ],
+  },
 ];

@@ -1,11 +1,14 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { nutritionist, patients } from '../data/mockData';
 
-interface User {
+export type UserRole = 'nutritionist' | 'patient' | null;
+
+export interface User {
   id: string;
   name: string;
   role: 'nutritionist' | 'patient';
   avatar: string;
+  email?: string;
 }
 
 interface AuthContextType {
@@ -34,12 +37,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           name: nutritionist.name,
           role: 'nutritionist',
           avatar: nutritionist.avatar,
+          email: 'pamela.angelus@optimeal.cl',
         }
       : {
           id: patients[0].id,
           name: patients[0].name,
           role: 'patient',
           avatar: patients[0].avatar,
+          email: patients[0].email,
         };
 
     setUser(userData);
@@ -49,6 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     setUser(null);
     localStorage.removeItem('optimeal_user');
+    localStorage.removeItem('optimeal_plan');
   };
 
   return (
@@ -63,7 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useAuth() {
+export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error('useAuth must be used within AuthProvider');
